@@ -1,5 +1,5 @@
 import React from 'react';
-import axios from 'axios';
+import axios, { isCancel } from 'axios';
 import ProgressBar from 'react-bootstrap/ProgressBar'
 
 
@@ -8,7 +8,6 @@ class ImageUpload extends React.Component {
     state = {
         file: null,
         uploadPercentage: 0,
-        img: null,
         source: null,
         uData: JSON.parse(sessionStorage.getItem('uData'))
     }
@@ -16,8 +15,8 @@ class ImageUpload extends React.Component {
 
         e.preventDefault();
         let data = new FormData(document.getElementById('form1'));
-        let file = this.state.img
-        data.append('image', file)
+        let { file } = this.state
+        data.append('file', file)
         const Canceltoken = axios.CancelToken;
         let source = Canceltoken.source();
         const options = {
@@ -30,27 +29,22 @@ class ImageUpload extends React.Component {
             },
             cancelToken: source.token
             ,
-            headers: {
-                'Authorization': 'Client-ID c15f75f944a7de6',
-
-                'Content-Type': 'multipart/form-data'
-            }
+            headers: { 'Content-Type': 'multipart/form-data', 'Access-Control-Allow-Origin': '*' }
         }
 
-        axios.post('https://api.imgur.com/3/image'
-            , data, options).then(res => {
-                console.log(res.data.data.link);
-                this.setState({ uploadPercentage: 100 }, () => {
-                    setTimeout(() => {
-                        this.setState({ uploadPercentage: 0 })
-                    }, 1000)
-                })
-            }).catch(function (thrown) {
-                if (axios.isCancel(thrown)) {
-                    console.log('Request canceled', thrown.message);
-                    alert('cancelled');
-                }
+        axios.post('http://localhost:5000/upload_file', data, options).then(res => {
+            console.log(res);
+            this.setState({ uploadPercentage: 100 }, () => {
+                setTimeout(() => {
+                    this.setState({ uploadPercentage: 0 })
+                }, 1000)
             })
+        }).catch(function (thrown) {
+            if (axios.isCancel(thrown)) {
+                console.log('Request canceled', thrown.message);
+                alert('cancelled');
+            }
+        })
         this.setState({ source: source })
     }
     cancelRequest = (e) => {
@@ -63,7 +57,6 @@ class ImageUpload extends React.Component {
     };
     handleImagePreview(previewEvent) {
         this.setState({
-            img: previewEvent.target.files[0],
             file: URL.createObjectURL(previewEvent.target.files[0])
         })
     }

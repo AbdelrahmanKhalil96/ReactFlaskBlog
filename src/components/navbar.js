@@ -27,7 +27,7 @@ class Navbar extends Component {
                         */}
                         </ul>
                         <ul className="navbar-nav ml-auto nav-flex-icons">
-                            {loggedIn
+                            {loggedIn === "true"
                                 ? <React.Fragment>
                                     <li className="nav-item"> <NavLink
                                         className="nav-link" to="/profile">View Profile</NavLink>
